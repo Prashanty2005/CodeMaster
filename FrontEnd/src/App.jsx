@@ -12,7 +12,7 @@ import AdminDelete from "./components/AdminDelete"
 import AdminUpdate from "./components/AdminUpdate"
 import AdminVideo from "./components/AdminVideo"
 import AdminUpload from "./components/AdminUpload"
-import Update from "./pages/update"
+import Update from "./pages/Update"
 function App(){
 
   //for every api call we will check if user is authenticated or not
