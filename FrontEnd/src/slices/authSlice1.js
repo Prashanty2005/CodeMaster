@@ -13,7 +13,8 @@ export const getAllProblems = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosClient.get('/problem/getAllProblem');
-      return response.data; // Assuming this returns an array of problems
+      return response.data.problems;
+       // Assuming this returns an array of problems
     } catch (err) {
       return rejectWithValue(getErrorMessage(err));
     }

@@ -26,7 +26,7 @@ const AdminVideo = () => {
       clearError();
       setLoading(true);
       const { data } = await axiosClient.get('/problem/getAllProblem');
-      setProblems(data);
+      setProblems(data.problems);
       
       // Check video status for each problem
       // const status = {};
