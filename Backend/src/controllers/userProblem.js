@@ -89,7 +89,10 @@ const createProblem = async (req, res) => {
         }
         
         // Validate tags against enum values
-        const validTags = ['array', 'LinkedList', 'Graph', 'tree'];
+        const validTags = ['array','string','hashtable','linkedlist','math','twopointers','tree','graph',
+            'depthfirstsearch','breadthfirstsearch','binarysearch','dynamicprogramming','greedy','backtracking',
+            'stack','queue','heap','slidingwindow','unionfind','trie','recursion','sorting','bitmanipulation',
+            'divideandconquer','segmenttree','fenwicktree','topologicalsort','design','simulation','memoization'];
         const invalidTags = processedTags.filter(tag => !validTags.includes(tag));
         if (invalidTags.length > 0) {
             return res.status(400).json({
@@ -655,21 +658,59 @@ const getProblemById = async(req,res) => {
     }
 }
 
-const fetchAllProblem = async(req,res) => {
-    try{
-        
-        const getProblem = await Problem.find({}).select('_id title difficulty tags');
+const fetchAllProblem = async (req, res) => {
+    try {
+        // Extract query parameters with defaults
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const difficulty = req.query.difficulty;
+        const tagsParam = req.query.tags; // comma-separated string, e.g., "array,string"
+        const search = req.query.search;
 
-        if(getProblem.length==0){
-           return res.status(400).send("problem does not exist");
+        // Build filter object
+        let filter = {};
+
+        // Difficulty filter
+        if (difficulty && difficulty !== 'all') {
+            filter.difficulty = difficulty;
         }
 
-        res.status(200).send(getProblem);
+        // Tags filter (strict match: all selected tags must be present)
+        if (tagsParam) {
+            const tagsArray = tagsParam.split(',').map(tag => tag.trim());
+            if (tagsArray.length > 0) {
+                filter.tags = { $all: tagsArray };
+            }
+        }
+
+        // Search filter (case‑insensitive) on title OR tags
+        if (search && search.trim() !== '') {
+            const searchRegex = new RegExp(search.trim(), 'i');
+            filter.$or = [
+                { title: searchRegex },
+                { tags: { $in: [searchRegex] } } // search in tags array
+            ];
+        }
+
+        // Count total matching documents
+        const total = await Problem.countDocuments(filter);
+
+        // Fetch paginated results
+        const problems = await Problem.find(filter)
+            .select('_id title difficulty tags')
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        if (problems.length === 0 && page === 1) {
+            return res.status(404).json({ message: "No problems found", problems: [], total: 0 });
+        }
+
+        res.status(200).json({ problems, total });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error: " + err.message });
     }
-    catch(err){
-        res.status(500).send("Error"+err)
-    }
-}
+};
 
 const solvedProblemByUser =async(req,res) => {
     try{

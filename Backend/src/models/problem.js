@@ -17,7 +17,10 @@ const problemSchema= new Schema({
     },
     tags:[{
         type:String,
-        enum:['array','LinkedList','Graph','tree','two-pointers'],
+        enum:['array','string','hashtable','linkedlist','math','twopointers','tree','graph','depthfirstsearch',
+            'breadthfirstsearch','binarysearch','dynamicprogramming','greedy','backtracking','stack','queue',
+            'heap','slidingwindow','unionfind','trie','recursion','sorting','bitmanipulation','divideandconquer',
+            'segmenttree','fenwicktree','topologicalsort','design','simulation','memoization'],
         required:true
     }],
     visibleTestCases:[
