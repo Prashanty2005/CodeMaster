@@ -13,6 +13,10 @@ import AdminUpdate from "./components/AdminUpdate"
 import AdminVideo from "./components/AdminVideo"
 import AdminUpload from "./components/AdminUpload"
 import Update from "./pages/Update"
+import Ui from "./pages/ui"
+import AboutUs from "./components/Aboutus"
+import Discuss from "./components/Discuss"
+import Problems from "./components/Problems"
 function App(){
 
   //for every api call we will check if user is authenticated or not
@@ -31,9 +35,13 @@ function App(){
  return(
     <>
     <Routes>
-      <Route path="/" element={isAuthenticated?<HomePage></HomePage>:<Navigate to="/signup"/>}></Route>
+      <Route path="/" element={isAuthenticated?<HomePage></HomePage>:<Navigate to="/ui"/>}></Route>
+      <Route path="/ui" element={isAuthenticated?<HomePage></HomePage>:<Ui></Ui>}></Route>
       <Route path="/login" element={isAuthenticated?<Navigate to="/"></Navigate>:<Login></Login>}></Route>
       <Route path="/signup" element={isAuthenticated?<Navigate to="/"></Navigate>:<Signup></Signup>}></Route>
+      <Route path="/about" element={<AboutUs></AboutUs>}></Route>
+      <Route path="/discuss" element={<Discuss></Discuss>}></Route>
+      <Route path="/problems" element={<Problems></Problems>}></Route>
       <Route path="problem/:problemId" element={<ProblemPage></ProblemPage>}></Route>
       <Route path="/admin"
       element={isAuthenticated && user?.role==='admin'?

@@ -173,7 +173,7 @@ Remember: Your ultimate goal is to make yourself obsolete by building the user's
             }
         });
 
-        console.log("AI Response:", response.text);
+        
         res.status(201).json({
             message: response.text
         });

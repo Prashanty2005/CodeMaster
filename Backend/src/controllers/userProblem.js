@@ -6,9 +6,7 @@ const { getlanguageById, submitBatch, submitToken } = require("../utils/problemU
 
 const createProblem = async (req, res) => {
     try {
-        console.log("=== CREATE PROBLEM START ===");
-        console.log("Request body:", JSON.stringify(req.body, null, 2));
-        console.log("Authenticated admin user:", req.result);
+        
 
         // 1. Authentication check
         if (!req.result || !req.result._id) {
@@ -286,9 +284,7 @@ const createProblem = async (req, res) => {
         // 6. Save to database
         const savedProblem = await Problem.create(problemData);
         
-        console.log(`=== PROBLEM CREATED SUCCESSFULLY: ${savedProblem._id} ===`);
-        console.log(`Title: ${savedProblem.title}, Difficulty: ${savedProblem.difficulty}`);
-        console.log(`Created by: ${req.result.email} (${req.result._id})`);
+        
         
         // 7. Return success response
         res.status(201).json({ 
@@ -547,11 +543,7 @@ const updateProblem = async (req, res) => {
             updatedAt: Date.now()
         };
 
-        console.log('Attempting to update with data:', {
-            title: updateData.title,
-            tags: updateData.tags,
-            visibleTestCasesCount: updateData.visibleTestCases.length
-        });
+        
 
         // Update the problem
         const updatedProblem = await Problem.findByIdAndUpdate(
@@ -660,55 +652,64 @@ const getProblemById = async(req,res) => {
 
 const fetchAllProblem = async (req, res) => {
     try {
-        // Extract query parameters with defaults
+        // Extract query parameters. 
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
+        // SMART CHECK: If no limit is provided in the URL, default to 0. (In MongoDB, limit(0) means "return everything")
+        const limit = req.query.limit ? parseInt(req.query.limit) : 0; 
+        
         const difficulty = req.query.difficulty;
-        const tagsParam = req.query.tags; // comma-separated string, e.g., "array,string"
+        const tagsParam = req.query.tags;
         const search = req.query.search;
 
         // Build filter object
         let filter = {};
 
-        // Difficulty filter
-        if (difficulty && difficulty !== 'all') {
-            filter.difficulty = difficulty;
+        if (difficulty && difficulty.toLowerCase() !== 'all') {
+            filter.difficulty = new RegExp(`^${difficulty}$`, 'i'); // Case-insensitive exact match
         }
 
-        // Tags filter (strict match: all selected tags must be present)
         if (tagsParam) {
-            const tagsArray = tagsParam.split(',').map(tag => tag.trim());
+            const tagsArray = tagsParam.split(',').map(tag => tag.trim()).filter(Boolean);
             if (tagsArray.length > 0) {
                 filter.tags = { $all: tagsArray };
             }
         }
 
-        // Search filter (case‑insensitive) on title OR tags
         if (search && search.trim() !== '') {
             const searchRegex = new RegExp(search.trim(), 'i');
             filter.$or = [
                 { title: searchRegex },
-                { tags: { $in: [searchRegex] } } // search in tags array
+                { tags: { $in: [searchRegex] } }
             ];
         }
 
         // Count total matching documents
         const total = await Problem.countDocuments(filter);
 
-        // Fetch paginated results
-        const problems = await Problem.find(filter)
-            .select('_id title difficulty tags')
-            .skip((page - 1) * limit)
-            .limit(limit);
+        // Build the query
+        const problemsQuery = Problem.find(filter)
+            .select('_id title difficulty tags') // Still keep it fast!
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit);
 
-        if (problems.length === 0 && page === 1) {
-            return res.status(404).json({ message: "No problems found", problems: [], total: 0 });
+        // Only apply the limit if one was requested (e.g., from Update.jsx)
+        if (limit > 0) {
+            problemsQuery.limit(limit);
         }
 
-        res.status(200).json({ problems, total });
+        // Execute the query
+        const problems = await problemsQuery;
+
+        if (problems.length === 0 && page === 1) {
+            return res.status(200).json({ message: "No problems found", problems: [], total: 0 });
+        }
+
+        // Return exactly what the Redux slice expects
+        return res.status(200).json({ problems, total });
+        
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Server error: " + err.message });
+        return res.status(500).json({ error: "Server error: " + err.message });
     }
 };
 

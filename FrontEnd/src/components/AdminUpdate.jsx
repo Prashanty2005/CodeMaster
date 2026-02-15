@@ -127,10 +127,7 @@ function AdminUpdate() {
  // Reset form with fetched problem data
  useEffect(() => {
   if (currentProblem) {
-    console.log('Current Problem Data from backend:', {
-      startCode: currentProblem.startCode,
-      referenceSolution: currentProblem.referenceSolution
-    });
+   
     
     const ensureNotEmpty = (arr) => (arr && arr.length > 0 ? arr : [{ input: '', output: '', explanation: '' }]);
     const ensureHiddenNotEmpty = (arr) => (arr && arr.length > 0 ? arr : [{ input: '', output: '' }]);
@@ -197,7 +194,6 @@ function AdminUpdate() {
       referenceSolution: normalizedReferenceSolution
     };
     
-    console.log('Form Data after reset:', formData);
     reset(formData);
   }
  }, [currentProblem, reset]);
@@ -212,7 +208,6 @@ function AdminUpdate() {
 
   const onSubmit = async (data) => {
     try {
-      console.log("Submitting:", data);
       await axiosClient.put(`/problem/update/${problemId}`, data);
       alert('Problem updated successfully!');
       navigate('/admin');

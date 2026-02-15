@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Trash2, Home, AlertTriangle, RefreshCw, Code2, Upload, Eye, XCircle } from 'lucide-react';
+import { Trash2, Home, AlertTriangle, RefreshCw, Code2, Upload, Eye, XCircle ,CheckCircle} from 'lucide-react';
 import axiosClient from '../utils/axiosClient'
 import { useNavigate } from 'react-router';
 
@@ -122,7 +122,7 @@ const AdminVideo = () => {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center">
               <Code2 size={20} className="text-white" />
             </div>
-            <span className="text-white font-bold">CodeChallenge</span>
+            <span className="text-white font-bold">CodeMaster</span>
             <span className="ml-4 px-3 py-1 bg-blue-900/40 text-blue-300 text-xs rounded-full">Admin Panel</span>
           </div>
         </div>
