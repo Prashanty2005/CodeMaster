@@ -59,7 +59,7 @@ const AdminDelete = () => {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center">
               <Code2 size={20} className="text-white" />
             </div>
-            <span className="text-white font-bold">CodeChallenge</span>
+            <span className="text-white font-bold">CodeMaster</span>
             <span className="ml-4 px-3 py-1 bg-red-900/40 text-red-300 text-xs rounded-full">Admin - Delete</span>
           </div>
         </div>

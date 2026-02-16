@@ -72,7 +72,7 @@ const Update = () => {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center">
               <Code2 size={20} className="text-white" />
             </div>
-            <span className="text-white font-bold">CodeChallenge</span>
+            <span className="text-white font-bold">CodeMaster</span>
             <span className="ml-4 px-3 py-1 bg-yellow-900/40 text-yellow-300 text-xs rounded-full">Admin - Update</span>
           </div>
         </div>

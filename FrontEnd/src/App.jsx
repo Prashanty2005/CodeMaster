@@ -13,7 +13,7 @@ import AdminUpdate from "./components/AdminUpdate"
 import AdminVideo from "./components/AdminVideo"
 import AdminUpload from "./components/AdminUpload"
 import Update from "./pages/Update"
-import Ui from "./pages/Ui"
+import Ui from "./pages/ui"
 import AboutUs from "./components/Aboutus"
 import Discuss from "./components/Discuss"
 import Problems from "./components/Problems"
@@ -35,7 +35,7 @@ function App(){
  return(
     <>
     <Routes>
-      <Route path="/" element={isAuthenticated?<HomePage></HomePage>:<Navigate to="/ui"/>}></Route>
+      <Route path="/" element={isAuthenticated?<HomePage></HomePage>:<Ui></Ui>}></Route>
       <Route path="/ui" element={isAuthenticated?<HomePage></HomePage>:<Ui></Ui>}></Route>
       <Route path="/login" element={isAuthenticated?<Navigate to="/"></Navigate>:<Login></Login>}></Route>
       <Route path="/signup" element={isAuthenticated?<Navigate to="/"></Navigate>:<Signup></Signup>}></Route>
