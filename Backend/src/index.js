@@ -1,47 +1,72 @@
-const express=require("express");
-const app= express();
+const express = require("express");
+const app = express();
 require('dotenv').config();
-const main=require('./config/db')
-const cookieParser= require("cookie-parser");
-const redisMain= require("./config/redis");
-const authRouter=require("./routes/userAuth")
-const problemRouter= require("./routes/problemCreater");
+const main = require('./config/db');
+const cookieParser = require("cookie-parser");
+const redisMain = require("./config/redis");
+const cors = require("cors");
+
+const authRouter = require("./routes/userAuth");
+const problemRouter = require("./routes/problemCreater");
 const submitRouter = require("./routes/submit");
 const aiRouter = require("./routes/aiChat");
-const videoRouter = require("./routes/videoCreator")
-const cors = require("cors")
+const videoRouter = require("./routes/videoCreator");
 
-// ... imports remain the same ...
-
-app.use(express.json());
-app.use(cookieParser());
-
-// CHANGE 1: Update CORS to allow both Localhost and your Vercel Frontend
+// 1. ALWAYS PUT CORS FIRST
 app.use(cors({
     origin: [
-        "http://localhost:5173",                          // For local testing
-        "https://code-master-frontend.vercel.app"         // YOUR VERCEL FRONTEND URL
+        "http://localhost:5173",                          // Local React
+        "https://code-master-frontend.vercel.app",        // Your Vercel Frontend (Check if this is the exact URL!)
+        "https://code-master-seven.vercel.app"            // Just in case frontend makes requests to same domain
     ],
     credentials: true
 }));
 
+// 2. Parsers
+app.use(express.json());
+app.use(cookieParser());
+
+// 3. Connect DB & Redis BEFORE defining routes (Crucial for Vercel)
+// We use an async IIFE (Immediately Invoked Function Expression) to ensure 
+// the serverless function initiates these immediately, but Mongoose will handle caching.
+(async () => {
+    try {
+        await main();
+        console.log("MongoDB Connection Initiated");
+    } catch (err) {
+        console.error("MongoDB Init Error:", err);
+    }
+
+    try {
+        // If Redis fails, we don't want it to crash the whole app on Vercel
+        await redisMain.connect();
+        console.log("Redis Connection Initiated");
+    } catch (err) {
+        console.error("Redis Init Error:", err);
+    }
+})();
+
+// 4. HEALTH CHECK ROUTE (Use this to test if Vercel is working!)
+app.get("/", (req, res) => {
+    res.status(200).json({ 
+        success: true, 
+        message: "CodeMaster API is running perfectly on Vercel!" 
+    });
+});
+
+// 5. Routes
 app.use('/user', authRouter);
 app.use('/problem', problemRouter);
 app.use('/submission', submitRouter);
 app.use("/ai", aiRouter);
 app.use("/video", videoRouter);
 
-// CHANGE 2: Separate DB connection from Server Listening
-// We connect to DB immediately so Vercel has it ready
-main().then(() => console.log("Connected to DB")).catch(err => console.log(err));
-redisMain.connect().then(() => console.log("Connected to Redis")).catch(err => console.log(err));
-
-// CHANGE 3: Only listen on Port 3000 if we are NOT on Vercel
+// 6. Start server (Local) or Export (Vercel)
 if (require.main === module) {
-    app.listen(3000, () => {
-        console.log("Listening on port 3000 (Local Mode)");
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Listening on port ${PORT} (Local Mode)`);
     });
 }
 
-// CHANGE 4: Export the app for Vercel
 module.exports = app;
