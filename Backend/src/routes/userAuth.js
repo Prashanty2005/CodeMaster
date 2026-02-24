@@ -18,14 +18,31 @@ authRouter.delete('/deleteProfile',userMiddleware,deleteProfile);
 authRouter.get("/check",userMiddleware,(req,res)=>{
     const reply={
         firstName:req.result.firstName,
+        lastName:req.result.lastName,
         email:req.result.email,
         _id:req.result._id,
-        role:req.result.role
+        role:req.result.role,
+        problemSolved:req.result.problemSolved
     }
     res.status(200).json({
         user:reply,
         message:"valid user"
     })
 })
+// In your user routes
+authRouter.put('/update', userMiddleware, async (req, res) => {
+  const User = require('../models/user');   // dynamic require
+  try {
+    const { firstName, lastName, age } = req.body;
+    const updatedUser = await User.findByIdAndUpdate(
+      req.result._id,
+      { firstName, lastName, age },
+      { new: true, runValidators: true }
+    ).select('-password');
+    res.json({ user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 module.exports = authRouter;
 

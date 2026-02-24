@@ -166,22 +166,79 @@ function Homepage() {
             )}
           </div>
           {user ? (
-            <div className="dropdown dropdown-end">
-              <div tabIndex={0} role="button" className="btn btn-sm bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white gap-2">
-                <User size={16} />
-                <span className="font-medium">{user.firstName}</span>
-              </div>
-              <ul tabIndex={0} className="mt-2 p-2 shadow-xl menu menu-sm dropdown-content bg-gray-800 border border-gray-700 rounded-xl w-52 z-50">
-                <li>
-                  <button onClick={handleLogout} className="flex gap-2 text-red-400 hover:bg-red-900/30 hover:text-red-300">
-                    <LogOut size={16} /> Logout
-                  </button>
-                </li>
-              </ul>
+          <div className="dropdown dropdown-end">
+            {/* Dropdown trigger button */}
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn btn-sm bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white gap-2"
+            >
+              <User size={16} />
+              <span className="font-medium">{user.firstName}</span>
             </div>
-          ) : (
-            <NavLink to="/login" className="btn btn-sm btn-primary">Login</NavLink>
-          )}
+
+            {/* Dropdown content */}
+            <div
+              tabIndex={0}
+              className="mt-2 p-4 shadow-xl dropdown-content bg-gray-800 border border-gray-700 rounded-xl w-72 z-50"
+            >
+              {/* User details table */}
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">First Name</span>
+                  <span className="text-white font-medium">{user.firstName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Last Name</span>
+                  <span className="text-white font-medium">{user.lastName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Email</span>
+                  <span className="text-white font-medium truncate max-w-[180px]">
+                    {user.email}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Role</span>
+                  <span className="text-white font-medium capitalize">
+                    {user.role}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Problems Solved</span>
+                  <span className="text-green-400 font-medium">
+                    {user.problemSolved?.length || 0}
+                  </span>
+                </div>
+              </div>
+
+              {/* Optional separator and profile link */}
+              <div className="divider my-3 bg-gray-700 h-px"></div>
+
+              {/* View Profile link (placeholder) */}
+              <div className="mb-2">
+                <NavLink
+                  to="/profile"
+                  className="block w-full text-left px-3 py-2 text-sm text-blue-400 hover:bg-gray-700 rounded-lg transition"
+                >
+                  View Profile
+                </NavLink>
+              </div>
+
+              {/* Logout button */}
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-red-900/30 hover:text-red-300 rounded-lg transition"
+              >
+                <LogOut size={16} /> Logout
+              </button>
+            </div>
+          </div>
+        ) : (
+          <NavLink to="/login" className="btn btn-sm btn-primary">
+            Login
+          </NavLink>
+        )}
         </div>
       </nav>
 

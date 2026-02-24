@@ -17,6 +17,7 @@ import Ui from "./pages/UiPage"
 import AboutUs from "./components/Aboutus"
 import Discuss from "./components/Discuss"
 import Problems from "./components/Problems"
+import Profile from "./pages/Profile"
 function App(){
 
   //for every api call we will check if user is authenticated or not
@@ -42,6 +43,7 @@ function App(){
       <Route path="/about" element={<AboutUs></AboutUs>}></Route>
       <Route path="/discuss" element={<Discuss></Discuss>}></Route>
       <Route path="/problems" element={<Problems></Problems>}></Route>
+      <Route path="/profile" element={<Profile></Profile>}></Route>
       <Route path="problem/:problemId" element={<ProblemPage></ProblemPage>}></Route>
       <Route path="/admin"
       element={isAuthenticated && user?.role==='admin'?

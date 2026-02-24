@@ -68,7 +68,11 @@ const authSlice = createSlice({
     loading: false,
     error: null
   },
-  reducers: {},
+  reducers: {
+    updateUser: (state, action) => {
+    state.user = { ...state.user, ...action.payload };
+  }
+  },
   extraReducers: (builder) => {
     builder
       // Register User Cases
@@ -149,4 +153,6 @@ const authSlice = createSlice({
 export const fetchProblem = createAsyncThunk(
   
 )
+export const { updateUser } = authSlice.actions;
 export default authSlice.reducer;
+
