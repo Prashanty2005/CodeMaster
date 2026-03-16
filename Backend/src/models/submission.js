@@ -50,10 +50,12 @@ const submissionSchema = new Schema({
   timestamps: true
 });
 
-submissionSchema.index({userId:1,problemId:1}) //created a compound index
-// 1 here suggests that following field will be stored in accending order
-//-1 will arrange in decending order
+// Existing index: Great for finding a user's submissions for a specific problem
+submissionSchema.index({ userId: 1, problemId: 1 });
 
-const Submission = mongoose.model('submission',submissionSchema);
+// NEW index: Crucial for the Activity Heatmap performance (grouping by date)
+submissionSchema.index({ userId: 1, createdAt: -1 });
 
-module.exports= Submission
+const Submission = mongoose.model('submission', submissionSchema);
+
+module.exports = Submission;

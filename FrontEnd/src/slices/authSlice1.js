@@ -10,6 +10,7 @@ const getErrorMessage = (error) => {
 // Async thunk for fetching all problems
 export const getAllProblems = createAsyncThunk(
   'problems/getAll',
+  //sliceName/actionName
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosClient.get('/problem/getAllProblem');

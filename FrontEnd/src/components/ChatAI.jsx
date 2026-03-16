@@ -1,75 +1,73 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import axiosClient from "../utils/axiosClient";
-import { Send, Bot, User, Sparkles, AlertCircle } from 'lucide-react';
+import { useDispatch, useSelector } from "react-redux";
+import { Send, Bot, User, Sparkles, AlertCircle, Trash2 } from 'lucide-react';
+import { addMessage, sendMessageToAi, initializeChat , clearChat} from "../slices/chatSlice";
 
-function ChatAi({problem}) {
-    const [messages, setMessages] = useState([
-        { 
-            role: 'model', 
-            parts: [{text: "Hello! I'm your coding assistant. I can help you with this problem, explain concepts, or debug your code. What would you like to know?"}],
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-    ]);
-    const [loading, setLoading] = useState(false);
+function ChatAi({ problem }) {
+    const dispatch = useDispatch();
+    
+    // 1. Pull state from Redux instead of local useState
+    const { messages, isLoading: loading } = useSelector((state) => state.chat);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
     const messagesEndRef = useRef(null);
     const chatContainerRef = useRef(null);
 
+    // 2. Initialize the chat with the greeting when the component mounts
+    useEffect(() => {
+        dispatch(initializeChat());
+    }, [dispatch]);
+
+    // Auto-scroll to bottom when messages update
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
     const onSubmit = async (data) => {
+        // Create the new user message
         const userMessage = {
             role: 'user', 
             parts: [{text: data.message}],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         
-        setMessages(prev => [...prev, userMessage]);
+        // Instantly add user message to UI via Redux
+        dispatch(addMessage(userMessage));
         reset();
-        setLoading(true);
 
-        try {
-            // Prepare test cases and start code for the backend
-            const visibleTestCases = problem?.visibleTestCases || [];
-            const hiddenTestCases = problem?.hiddenTestCases || [];
-            const testCases = [...visibleTestCases, ...hiddenTestCases];
-            
-            const startCode = problem?.startCode || [];
+        // Prepare test cases
+        const visibleTestCases = problem?.visibleTestCases || [];
+        const hiddenTestCases = problem?.hiddenTestCases || [];
+        const testCases = [...visibleTestCases, ...hiddenTestCases];
+        const startCode = problem?.startCode || [];
 
-            const requestData = {
-                messages: data.message, // Just the current message string
-                title: problem?.title || "",
-                description: problem?.description || "",
-                difficulty: problem?.difficulty || "",
-                tags: problem?.tags || [],
-                testCases: testCases,
-                startCode: startCode
-            };
+        // Formatting the full history for Gemini (Removing 'timestamp' to keep the payload clean)
+        const fullChatHistory = [...messages, userMessage].map(msg => ({
+            role: msg.role,
+            parts: msg.parts
+        }));
 
-            const response = await axiosClient.post("/ai/chat", requestData);
+        const requestData = {
+            messages: fullChatHistory, // Sends FULL memory context to your backend!
+            title: problem?.title || "",
+            description: problem?.description || "",
+            difficulty: problem?.difficulty || "",
+            tags: problem?.tags || [],
+            testCases: testCases,
+            startCode: startCode
+        };
 
-            // Backend returns { message: "response text" }
-            const aiResponse = response.data.message || "No response received";
-            
-            setMessages(prev => [...prev, { 
-                role: 'model', 
-                parts: [{text: aiResponse}],
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }]);
-        } catch (error) {
-            console.error("API Error:", error);
-            setMessages(prev => [...prev, { 
-                role: 'model', 
-                parts: [{text: "Sorry, I encountered an error. Please try again in a moment."}],
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }]);
-        } finally {
-            setLoading(false);
-        }
+        // Dispatch the API call via Redux Thunk
+        dispatch(sendMessageToAi(requestData));
+    };
+
+    const handleClearChat = () => {
+        dispatch(clearChat());
+        // Small timeout ensures the state clears before re-initializing the greeting
+        setTimeout(() => {
+            dispatch(initializeChat());
+        }, 50);
     };
 
     // Quick action suggestions
@@ -96,7 +94,6 @@ function ChatAi({problem}) {
             
             // Check if it's code by looking for code blocks
             if (text.includes('```')) {
-                // Split by code blocks
                 const parts = text.split(/```([\w]*)\n?/);
                 
                 return (
@@ -153,7 +150,24 @@ function ChatAi({problem}) {
                     </div>
                 </div>
             </div>
-
+            
+            <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="hidden sm:flex items-center gap-1.5 bg-yellow-900/30 border border-yellow-700/30 px-2 py-1 rounded-md">
+                            <Sparkles size={14} className="text-yellow-400" />
+                            <span className="text-[10px] sm:text-xs text-yellow-400 font-medium tracking-wide uppercase">AI Powered</span>
+                        </div>
+                        
+                        <div className="w-px h-6 bg-gray-700 mx-1 hidden sm:block"></div>
+                        
+                        <button
+                            onClick={handleClearChat}
+                            disabled={loading || messages.length <= 1}
+                            title="Clear Chat"
+                            className="p-1.5 sm:p-2 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                            <Trash2 size={18} />
+                        </button>
+                    </div>
             {/* Messages Area */}
             <div 
                 ref={chatContainerRef}

@@ -1,4 +1,3 @@
-// pages/Profile.jsx
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, useNavigate } from 'react-router';
@@ -7,19 +6,18 @@ import {
   CheckCircle2, Loader2, ChevronRight, X, Save 
 } from 'lucide-react';
 import axiosClient from '../utils/axiosClient';
-import { updateUser } from '../slices/authSlice'; // Import the new action
+import { updateUser } from '../slices/authSlice';
+import ActivityHeatmap from '../components/ActivityHeatmap';
 
 function Profile() {
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
-  // State for solved problems
   const [solvedProblems, setSolvedProblems] = useState([]);
   const [loadingSolved, setLoadingSolved] = useState(false);
   const [errorSolved, setErrorSolved] = useState(null);
 
-  // State for edit modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     firstName: '',
@@ -29,14 +27,10 @@ function Profile() {
   const [updating, setUpdating] = useState(false);
   const [updateError, setUpdateError] = useState('');
 
-  // Redirect if not logged in
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
+    if (!isAuthenticated) navigate('/login');
   }, [isAuthenticated, navigate]);
 
-  // Fetch solved problems
   useEffect(() => {
     const fetchSolvedProblems = async () => {
       if (!user) return;
@@ -55,7 +49,6 @@ function Profile() {
     fetchSolvedProblems();
   }, [user]);
 
-  // Populate edit form when modal opens
   useEffect(() => {
     if (user && isEditModalOpen) {
       setEditForm({
@@ -77,7 +70,6 @@ function Profile() {
     setUpdating(true);
     setUpdateError('');
 
-    // Basic validation
     if (!editForm.firstName.trim() || !editForm.lastName.trim()) {
       setUpdateError('First name and last name are required.');
       setUpdating(false);
@@ -91,10 +83,7 @@ function Profile() {
         age: editForm.age ? Number(editForm.age) : undefined
       });
       
-      // Update Redux store
       dispatch(updateUser(data.user));
-      
-      // Close modal
       setIsEditModalOpen(false);
     } catch (error) {
       setUpdateError(error.response?.data?.error || 'Failed to update profile.');
@@ -105,14 +94,14 @@ function Profile() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-[#0f1117] flex items-center justify-center">
+        <Loader2 className="animate-spin text-blue-500" size={40} />
       </div>
     );
   }
 
   const joinDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
-    year: 'numeric', month: 'long', day: 'numeric'
+    year: 'numeric', month: 'short', day: 'numeric'
   }) : 'N/A';
 
   const getDifficultyColor = (difficulty) => {
@@ -125,13 +114,13 @@ function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950">
+    <div className="min-h-screen bg-[#0f1117] text-gray-200">
       {/* Navbar */}
-      <nav className="navbar bg-gray-900/80 backdrop-blur-md border-b border-gray-700 px-6 shadow-xl sticky top-0 z-50">
+      <nav className="navbar bg-[#13161f]/80 backdrop-blur-md border-b border-gray-800 px-6 shadow-xl sticky top-0 z-50">
         <div className="flex-1">
-          <NavLink to="/" className="btn btn-ghost text-xl font-bold tracking-wide">
+          <NavLink to="/" className="btn btn-ghost hover:bg-transparent text-xl font-bold tracking-wide">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
                 <Code2 size={20} className="text-white" />
               </div>
               <span className="text-white">CodeMaster</span>
@@ -139,216 +128,197 @@ function Profile() {
           </NavLink>
         </div>
         <div className="flex items-center gap-4">
-          <NavLink to="/" className="btn btn-sm bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white">
-            <ArrowLeft size={16} /> Back to Home
+          <NavLink to="/" className="btn btn-sm bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white transition-all">
+            <ArrowLeft size={16} /> Home
           </NavLink>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <div className="container mx-auto p-4 lg:p-6 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">My Profile</h1>
-          <p className="text-gray-400">View and manage your account information</p>
-        </div>
-
-        {/* Profile Card */}
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl shadow-xl overflow-hidden mb-8">
-          {/* Header with avatar and name */}
-          <div className="bg-gradient-to-r from-blue-600/20 to-indigo-600/20 px-6 py-8 border-b border-gray-700">
-            <div className="flex items-center gap-6">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
-                {user.firstName?.[0]}{user.lastName?.[0]}
+      {/* Main Layout Grid */}
+      <div className="container mx-auto p-4 lg:py-10 max-w-7xl">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* LEFT COLUMN: Profile Sidebar (Takes ~33% width on large screens) */}
+          <div className="lg:col-span-4 flex flex-col gap-6">
+            <div className="bg-[#151821] border border-gray-800 rounded-3xl shadow-xl overflow-hidden sticky top-24">
+              {/* Banner */}
+              <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-700 relative">
+                 <button
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="absolute top-4 right-4 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full backdrop-blur-md transition-all"
+                  title="Edit Profile"
+                >
+                  <Edit2 size={16} />
+                </button>
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white">
-                  {user.firstName} {user.lastName}
-                </h2>
-                <p className="text-gray-400 flex items-center gap-1 mt-1">
-                  <Mail size={14} /> {user.email}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Details Grid */}
-          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Left Column */}
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <User className="text-blue-400 mt-1" size={18} />
-                <div>
-                  <p className="text-sm text-gray-400">Full Name</p>
-                  <p className="text-white font-medium">
-                    {user.firstName} {user.lastName}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Mail className="text-blue-400 mt-1" size={18} />
-                <div>
-                  <p className="text-sm text-gray-400">Email Address</p>
-                  <p className="text-white font-medium break-all">{user.email}</p>
-                </div>
-              </div>
-              {user.age && (
-                <div className="flex items-start gap-3">
-                  <Calendar className="text-blue-400 mt-1" size={18} />
-                  <div>
-                    <p className="text-sm text-gray-400">Age</p>
-                    <p className="text-white font-medium">{user.age} years</p>
+              
+              <div className="px-6 pb-8 -mt-16 relative z-10 text-center">
+                {/* Avatar */}
+                <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-gray-800 to-gray-900 p-1 ring-4 ring-[#151821] shadow-2xl mb-4">
+                  <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-4xl font-bold">
+                    {user.firstName?.[0]?.toUpperCase()}{user.lastName?.[0]?.toUpperCase()}
                   </div>
                 </div>
-              )}
-            </div>
 
-            {/* Right Column */}
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <Shield className="text-blue-400 mt-1" size={18} />
-                <div>
-                  <p className="text-sm text-gray-400">Role</p>
-                  <p className="text-white font-medium capitalize">{user.role}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Award className="text-blue-400 mt-1" size={18} />
-                <div>
-                  <p className="text-sm text-gray-400">Problems Solved</p>
-                  <p className="text-white font-medium">{solvedProblems.length}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Calendar className="text-blue-400 mt-1" size={18} />
-                <div>
-                  <p className="text-sm text-gray-400">Member Since</p>
-                  <p className="text-white font-medium">{joinDate}</p>
-                </div>
-              </div>
-            </div>
-          </div>
+                <h1 className="text-2xl font-bold text-white mb-1">
+                  {user.firstName} {user.lastName}
+                </h1>
+                <p className="text-gray-400 text-sm mb-4">{user.email}</p>
 
-          {/* Action Buttons */}
-          <div className="px-6 py-4 bg-gray-900/30 border-t border-gray-700 flex justify-end gap-3">
-            <button
-              className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition flex items-center gap-2"
-              onClick={() => navigate('/')}
-            >
-              <ArrowLeft size={16} /> Back
-            </button>
-            <button
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-500 hover:to-indigo-500 transition flex items-center gap-2"
-              onClick={() => setIsEditModalOpen(true)}
-            >
-              <Edit2 size={16} /> Edit Profile
-            </button>
-          </div>
-        </div>
+                <div className="flex justify-center mb-6">
+                  <span className={`px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider border ${
+                    user.role === 'admin' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                  }`}>
+                    {user.role}
+                  </span>
+                </div>
 
-        {/* Solved Problems Section */}
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl shadow-xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-700 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-              <CheckCircle2 size={20} className="text-green-400" />
-              Solved Problems
-            </h2>
-            <span className="text-sm text-gray-400">{solvedProblems.length} total</span>
-          </div>
-          <div className="p-6">
-            {loadingSolved && (
-              <div className="flex justify-center items-center py-8">
-                <Loader2 className="animate-spin text-blue-500" size={32} />
-                <span className="ml-3 text-gray-400">Loading solved problems...</span>
-              </div>
-            )}
-            {errorSolved && (
-              <div className="text-center py-8 text-red-400">{errorSolved}</div>
-            )}
-            {!loadingSolved && !errorSolved && solvedProblems.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-gray-400">You haven't solved any problems yet.</p>
-                <NavLink to="/" className="btn btn-sm mt-4 bg-blue-600 text-white hover:bg-blue-500">
-                  Start Solving
-                </NavLink>
-              </div>
-            )}
-            {!loadingSolved && solvedProblems.length > 0 && (
-              <div className="space-y-3">
-                {solvedProblems.map((problem) => (
-                  <NavLink
-                    key={problem._id}
-                    to={`/problem/${problem._id}`}
-                    className="block group"
-                  >
-                    <div className="flex items-center justify-between p-4 bg-gray-900/30 rounded-xl border border-gray-700 hover:border-gray-600 transition-all">
-                      <div className="flex items-center gap-3">
-                        <CheckCircle2 size={18} className="text-green-400" />
-                        <span className="text-white font-medium group-hover:text-blue-300 transition">
-                          {problem.title}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(problem.difficulty)}`}>
-                          {problem.difficulty}
-                        </span>
-                        <ChevronRight size={16} className="text-gray-500 group-hover:text-gray-300" />
-                      </div>
+                <div className="divider border-gray-800 my-0"></div>
+
+                {/* Vertical Details List */}
+                <div className="space-y-4 text-left mt-6">
+                  <div className="flex items-center gap-3 text-sm">
+                    <Award className="text-gray-500" size={18} />
+                    <span className="text-gray-400 w-24">Solved</span>
+                    <span className="text-white font-medium">{solvedProblems.length} Problems</span>
+                  </div>
+                  
+                  {user.age && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <User className="text-gray-500" size={18} />
+                      <span className="text-gray-400 w-24">Age</span>
+                      <span className="text-white font-medium">{user.age} Years Old</span>
                     </div>
-                  </NavLink>
-                ))}
+                  )}
+
+                  <div className="flex items-center gap-3 text-sm">
+                    <Calendar className="text-gray-500" size={18} />
+                    <span className="text-gray-400 w-24">Joined</span>
+                    <span className="text-white font-medium">{joinDate}</span>
+                  </div>
+                </div>
               </div>
-            )}
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: Activity & Solved Problems (Takes ~67% width) */}
+          <div className="lg:col-span-8 flex flex-col gap-8">
+            
+            {/* Activity Heatmap Section */}
+            <div>
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Code2 size={22} className="text-blue-400" /> Activity Heatmap
+              </h2>
+              <ActivityHeatmap />
+            </div>
+
+            {/* Solved Problems Section */}
+            <div className="bg-[#151821] border border-gray-800 rounded-3xl shadow-xl overflow-hidden flex flex-col" style={{ maxHeight: '800px' }}>
+              <div className="px-6 py-5 border-b border-gray-800 flex items-center justify-between bg-[#151821] z-10">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <CheckCircle2 size={22} className="text-green-500" />
+                  Solved Problems
+                </h2>
+                <span className="px-3 py-1 bg-gray-800 rounded-full text-xs font-medium text-gray-300">
+                  {solvedProblems.length} Total
+                </span>
+              </div>
+              
+              {/* Scrollable List */}
+              <div className="p-4 overflow-y-auto custom-scrollbar flex-1">
+                {loadingSolved ? (
+                  <div className="flex flex-col justify-center items-center py-16 gap-4">
+                    <Loader2 className="animate-spin text-blue-500" size={32} />
+                    <span className="text-gray-400">Loading your accomplishments...</span>
+                  </div>
+                ) : errorSolved ? (
+                  <div className="text-center py-16 text-red-400 bg-red-500/10 rounded-xl border border-red-500/20">{errorSolved}</div>
+                ) : solvedProblems.length === 0 ? (
+                  <div className="text-center py-16 bg-[#1a1e2a] rounded-xl border border-gray-800">
+                    <p className="text-gray-400 mb-4">You haven't solved any problems yet. Time to change that!</p>
+                    <NavLink to="/" className="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-500 transition-colors font-medium">
+                      Start Practicing
+                    </NavLink>
+                  </div>
+                ) : (
+                  <div className="grid gap-3">
+                    {solvedProblems.map((problem) => (
+                      <NavLink
+                        key={problem._id}
+                        to={`/problem/${problem._id}`}
+                        className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-[#1a1e2a] rounded-xl border border-gray-800 hover:border-gray-600 hover:bg-[#1e2330] transition-all gap-4"
+                      >
+                        <div className="flex items-start sm:items-center gap-3">
+                          <CheckCircle2 size={18} className="text-green-500 mt-1 sm:mt-0 flex-shrink-0" />
+                          <span className="text-gray-200 font-medium group-hover:text-blue-400 transition-colors">
+                            {problem.title}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4 self-start sm:self-auto pl-7 sm:pl-0">
+                          <span className={`px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${getDifficultyColor(problem.difficulty)}`}>
+                            {problem.difficulty}
+                          </span>
+                          <ChevronRight size={18} className="text-gray-600 group-hover:text-gray-300 transition-colors hidden sm:block" />
+                        </div>
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
 
-      {/* Edit Profile Modal */}
+      {/* Edit Profile Modal (Remains Unchanged Logically, Styled to Match) */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b border-gray-700">
-              <h3 className="text-xl font-semibold text-white">Edit Profile</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#151821] border border-gray-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-6 border-b border-gray-800 bg-[#1a1e2a]">
+              <h3 className="text-xl font-bold text-white">Edit Profile</h3>
               <button
                 onClick={() => setIsEditModalOpen(false)}
-                className="text-gray-400 hover:text-white transition"
+                className="text-gray-400 hover:bg-gray-800 hover:text-white p-1.5 rounded-lg transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-5">
               {updateError && (
-                <div className="bg-red-900/30 border border-red-800 text-red-400 px-4 py-2 rounded-lg text-sm">
-                  {updateError}
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm flex items-start gap-2">
+                  <X size={16} className="mt-0.5 flex-shrink-0" /> {updateError}
                 </div>
               )}
 
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">First Name *</label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={editForm.firstName}
-                  onChange={handleEditInputChange}
-                  className="w-full px-4 py-2 bg-gray-900/70 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">First Name *</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={editForm.firstName}
+                    onChange={handleEditInputChange}
+                    className="w-full px-4 py-2.5 bg-[#0f1117] border border-gray-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">Last Name *</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={editForm.lastName}
+                    onChange={handleEditInputChange}
+                    className="w-full px-4 py-2.5 bg-[#0f1117] border border-gray-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                    required
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Last Name *</label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={editForm.lastName}
-                  onChange={handleEditInputChange}
-                  className="w-full px-4 py-2 bg-gray-900/70 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">Age (optional)</label>
+                <label className="block text-sm font-medium text-gray-400 mb-1.5">Age (Optional)</label>
                 <input
                   type="number"
                   name="age"
@@ -356,34 +326,36 @@ function Profile() {
                   onChange={handleEditInputChange}
                   min="6"
                   max="80"
-                  className="w-full px-4 py-2 bg-gray-900/70 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  className="w-full px-4 py-2.5 bg-[#0f1117] border border-gray-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Email (cannot be changed)</label>
+                <label className="block text-sm font-medium text-gray-400 mb-1.5 flex justify-between">
+                  Email <span className="text-gray-600 text-xs">Uneditable</span>
+                </label>
                 <input
                   type="email"
                   value={user.email}
                   disabled
-                  className="w-full px-4 py-2 bg-gray-900/30 border border-gray-700 rounded-lg text-gray-400 cursor-not-allowed"
+                  className="w-full px-4 py-2.5 bg-[#0f1117]/50 border border-gray-800 rounded-xl text-gray-500 cursor-not-allowed opacity-70"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4">
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-800 mt-6">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition"
+                  className="px-5 py-2.5 bg-transparent border border-gray-700 text-gray-300 rounded-xl hover:bg-gray-800 hover:text-white transition-all font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={updating}
-                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-500 hover:to-indigo-500 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-500 hover:to-indigo-500 transition-all flex items-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20"
                 >
-                  {updating ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                  {updating ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                   Save Changes
                 </button>
               </div>

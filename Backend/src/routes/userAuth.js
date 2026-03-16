@@ -3,7 +3,7 @@ const authRouter= express.Router();
 const {register,login,logout,adminRegister,deleteProfile}= require("../controllers/userAuthenticate");
 const userMiddleware= require("../middleware/userMiddleware");
 const adminMiddleware=require("../middleware/adminMiddleware")
-
+const Submission  = require("../models/submission")
 //register
 authRouter.post('/register',register); // register ,login are controllers we will create them in controller
 authRouter.post('/login',login);
@@ -44,5 +44,54 @@ authRouter.put('/update', userMiddleware, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+authRouter.get("/activity", userMiddleware, async (req, res) => {
+  try {
+    const userId = req.result._id;
+
+    // Calculate the date exactly one year ago from today
+    const oneYearAgo = new Date();
+    oneYearAgo.setDate(oneYearAgo.getDate() - 365);
+
+    const activityData = await Submission.aggregate([
+      // 1. Match ONLY accepted submissions for this user from the past year
+      {
+        $match: {
+        userId: userId,
+        createdAt: { $gte: oneYearAgo },
+        status: 'accepted' // Matches the lowercase 'accepted' in your schema
+        }
+      },
+      // 2. Group by the date portion of createdAt (YYYY-MM-DD)
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
+          },
+          count: { $sum: 1 } // Count how many accepted submissions happened this day
+        }
+      },
+      // 3. Format the output
+      {
+        $project: {
+          _id: 0,
+          date: "$_id",
+          count: 1
+        }
+      },
+      // 4. Sort chronologically
+      {
+        $sort: { date: 1 }
+      }
+    ]);
+
+    res.status(200).json(activityData);
+
+  } catch (error) {
+    console.error("Error fetching activity:", error);
+    res.status(500).json({ message: "Failed to fetch activity data" });
+  }
+});
+
 module.exports = authRouter;
 
