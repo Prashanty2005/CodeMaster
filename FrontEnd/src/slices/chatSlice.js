@@ -73,6 +73,6 @@ const chatSlice = createSlice({
             });
     }
 });
-
+//this is importent thing
 export const { addMessage, initializeChat, clearChat } = chatSlice.actions;
 export default chatSlice.reducer;
