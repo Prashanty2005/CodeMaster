@@ -62,7 +62,7 @@ const chatSlice = createSlice({
                 });
             })
             .addCase(sendMessageToAi.rejected, (state, action) => {
-                state.isLoading = false;git checkout -b test-preview
+                state.isLoading = false;
                 state.error = action.payload;
                 // Add an error message bubble if the API fails
                 state.messages.push({
