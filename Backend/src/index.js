@@ -16,7 +16,7 @@ const videoRouter = require("./routes/videoCreator");
 app.use(cors({
     origin: [
         "http://localhost:5173",                          // Local React
-        "https://code-master-frontend.vercel.app",        // Your Vercel Frontend (Check if this is the exact URL!)
+        "https://codemaster-platform.vercel.app",        // Your Vercel Frontend (Check if this is the exact URL!)
         "https://code-master-seven.vercel.app"            // Just in case frontend makes requests to same domain
     ],
     credentials: true
