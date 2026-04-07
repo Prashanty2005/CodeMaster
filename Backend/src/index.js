@@ -16,8 +16,8 @@ const videoRouter = require("./routes/videoCreator");
 app.use(cors({
     origin: [
         "http://localhost:5173",                          // Local React
-        "https://codemaster-platform.vercel.app",        // Your Vercel Frontend (Check if this is the exact URL!)
-        "https://code-master-seven.vercel.app"            // Just in case frontend makes requests to same domain
+        "https://codemaster-platform.vercel.app",         // Your Vercel Frontend 
+        "https://code-master-seven.vercel.app"            // Backend
     ],
     credentials: true
 }));
@@ -26,25 +26,29 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// 3. Connect DB & Redis BEFORE defining routes (Crucial for Vercel)
-// We use an async IIFE (Immediately Invoked Function Expression) to ensure 
-// the serverless function initiates these immediately, but Mongoose will handle caching.
-(async () => {
+// 3. Connect DB & Redis BEFORE defining routes (Vercel Serverless Fix)
+app.use(async (req, res, next) => {
     try {
-        await main();
-        console.log("MongoDB Connection Initiated");
+        // Connect to MongoDB before proceeding
+        await main(); 
+        
+        try {
+            // Safely attempt Redis connection (if not already open)
+            if (!redisMain.isOpen) {
+                await redisMain.connect();
+            }
+        } catch (redisErr) {
+            // Catch Redis errors silently so it doesn't crash the whole app
+            console.error("Redis Init Error:", redisErr);
+        }
+        
+        // Crucial: Moves on to your routes only AFTER DB is connected
+        next(); 
     } catch (err) {
-        console.error("MongoDB Init Error:", err);
+        console.error("MongoDB Connection Error:", err);
+        res.status(500).json({ success: false, message: "Database connection failed" });
     }
-
-    try {
-        // If Redis fails, we don't want it to crash the whole app on Vercel
-        await redisMain.connect();
-        console.log("Redis Connection Initiated");
-    } catch (err) {
-        console.error("Redis Init Error:", err);
-    }
-})();
+});
 
 // 4. HEALTH CHECK ROUTE (Use this to test if Vercel is working!)
 app.get("/", (req, res) => {
