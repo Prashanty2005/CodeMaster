@@ -66,6 +66,9 @@ const login = async (req, res) => {
 
         const reply = {
             firstName: foundUser.firstName,
+            lastName:foundUser.lastName,
+            problemSolved:foundUser.problemSolved,
+            age:foundUser.age,
             email: foundUser.email,
             _id: foundUser._id,
             role: foundUser.role
