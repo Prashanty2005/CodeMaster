@@ -52,43 +52,59 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        if (!email || !password)
-            throw new Error("invalid Credintials");
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Email and password are required."
+            });
+        }
 
         const foundUser = await User.findOne({ email });
 
-        if (!foundUser)
-            throw new Error("user does not exits");
+        if (!foundUser) {
+            return res.status(401).json({
+                success: false,
+                message: "No account found with this email address."
+            });
+        }
 
         const ans = await bcrypt.compare(password, foundUser.password);
-        if (!ans)
-            throw new Error("Invalid Credintials");
+        
+        if (!ans) {
+            return res.status(401).json({
+                success: false,
+                message: "Incorrect password. Please try again."
+            });
+        }
 
         const reply = {
             firstName: foundUser.firstName,
-            lastName:foundUser.lastName,
-            problemSolved:foundUser.problemSolved,
-            age:foundUser.age,
+            lastName: foundUser.lastName,
+            problemSolved: foundUser.problemSolved,
+            age: foundUser.age,
             email: foundUser.email,
             _id: foundUser._id,
             role: foundUser.role
         };
 
-        if (!JWT_SECRET) throw new Error('JWT secret not set. Set process.env.JWT');
+        if (!JWT_SECRET) {
+            return res.status(500).json({
+                success: false,
+                message: "JWT secret not set."
+            });
+        }
         
-        // Note: I standardized 'id' to '_id' here to match your register function
         const token = jwt.sign(
             { email: email, role: foundUser.role, _id: foundUser._id }, 
             JWT_SECRET, 
             { expiresIn: 60 * 60 }
         );
 
-        // --- FIX: UPDATED COOKIE SETTINGS FOR VERCEL ---
         res.cookie('token', token, {
             httpOnly: true,
             maxAge: 60 * 60 * 1000,
-            secure: true,       // REQUIRED: Vercel uses HTTPS
-            sameSite: 'none'    // REQUIRED: Allows cookie between Frontend & Backend
+            secure: true,
+            sameSite: 'none'
         });
 
         res.status(200).json({
@@ -96,7 +112,10 @@ const login = async (req, res) => {
             message: "login successfull"
         }); 
     } catch (err) {
-        res.status(401).send("err" + err);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error."
+        });
     }
 };
 

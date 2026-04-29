@@ -4,9 +4,14 @@ const {register,login,logout,adminRegister,deleteProfile}= require("../controlle
 const userMiddleware= require("../middleware/userMiddleware");
 const adminMiddleware=require("../middleware/adminMiddleware")
 const Submission  = require("../models/submission")
+
+// Import the generic validation middleware and Joi schemas
+const validate = require("../middleware/validate");
+const { registerSchema, loginSchema } = require("../../validators/authValidator");
+
 //register
-authRouter.post('/register',register); // register ,login are controllers we will create them in controller
-authRouter.post('/login',login);
+authRouter.post('/register', validate(registerSchema), register); // register ,login are controllers we will create them in controller
+authRouter.post('/login', validate(loginSchema), login);
 authRouter.post('/logout',userMiddleware,logout);
 //admin middlware will verify if it is admin or not
 authRouter.post("/admin/register",adminMiddleware,adminRegister); // admin will register new member as admin, so admin access is must for registration of new member
