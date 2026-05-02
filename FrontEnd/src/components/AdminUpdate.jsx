@@ -48,7 +48,13 @@ const problemSchema = z.object({
       language: z.enum(['cpp', 'java', 'javascript']), 
       completeCode: z.string().min(1, 'Complete code is required')
     })
-  ).length(3, 'All three languages required')
+  ).length(3, 'All three languages required'),
+  driverCode: z.array(
+    z.object({
+      language: z.enum(['cpp', 'java', 'javascript']),
+      code: z.string().optional()
+    })
+  ).length(3)
 });
 
 function AdminUpdate() {
@@ -89,6 +95,11 @@ function AdminUpdate() {
         { language: 'cpp', completeCode: '' },
         { language: 'java', completeCode: '' },
         { language: 'javascript', completeCode: '' } // UPDATED: Lowercase
+      ],
+      driverCode: [
+        { language: 'cpp', code: '' },
+        { language: 'java', code: '' },
+        { language: 'javascript', code: '' }
       ]
     }
   });
@@ -183,6 +194,26 @@ function AdminUpdate() {
       normalizedReferenceSolution.push({ language: missingLang || 'cpp', completeCode: '' });
     }
 
+    // Normalize driverCode from backend
+    const normalizedDriverCode = currentProblem.driverCode && currentProblem.driverCode.length > 0
+      ? currentProblem.driverCode.map(item => ({
+          language: normalizeLanguage(item.language),
+          code: item.code || ''
+        }))
+      : [
+          { language: 'cpp', code: '' },
+          { language: 'java', code: '' },
+          { language: 'javascript', code: '' }
+        ];
+    
+    // Ensure we have exactly 3 items
+    while (normalizedDriverCode.length < 3) {
+      const languages = ['cpp', 'java', 'javascript'];
+      const existingLangs = normalizedDriverCode.map(item => item.language);
+      const missingLang = languages.find(lang => !existingLangs.includes(lang));
+      normalizedDriverCode.push({ language: missingLang || 'cpp', code: '' });
+    }
+
     const formData = {
       title: currentProblem.title || '',
       description: currentProblem.description || '',
@@ -191,7 +222,8 @@ function AdminUpdate() {
       visibleTestCases: ensureNotEmpty(currentProblem.visibleTestCases),
       hiddenTestCases: ensureHiddenNotEmpty(currentProblem.hiddenTestCases),
       startCode: normalizedStartCode,
-      referenceSolution: normalizedReferenceSolution
+      referenceSolution: normalizedReferenceSolution,
+      driverCode: normalizedDriverCode
     };
     
     reset(formData);
@@ -532,6 +564,17 @@ function AdminUpdate() {
                           {...register(`referenceSolution.${index}.completeCode`)}
                           className={`${textareaStyle} font-mono text-xs h-32 bg-gray-900 focus:bg-gray-800`}
                           placeholder={`// Enter complete ${lang} solution`}
+                        />
+                      </div>
+                      
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text text-gray-400 text-xs uppercase font-bold">Driver Code (Hidden Wrapper)</span>
+                        </label>
+                        <textarea
+                          {...register(`driverCode.${index}.code`)}
+                          className={`${textareaStyle} font-mono text-xs h-32 bg-gray-900 focus:bg-gray-800`}
+                          placeholder={`// Enter ${lang} driver code with {{USER_CODE}} (Optional)`}
                         />
                       </div>
                     </div>

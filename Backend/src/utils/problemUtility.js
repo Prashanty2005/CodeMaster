@@ -61,7 +61,7 @@ const submitToken = async (resultTokens, maxRetries = 30) => {
         url: 'https://judge0-ce.p.rapidapi.com/submissions/batch',
         params: {
             tokens: resultTokens.join(","),
-            base64_encoded: 'false',
+            base64_encoded: 'true',
             fields: '*'
         },
         headers: {
@@ -74,6 +74,14 @@ const submitToken = async (resultTokens, maxRetries = 30) => {
     const fetchData = async () => {
         try {
             const response = await axios.request(options);
+            if (response.data && response.data.submissions) {
+                for (let sub of response.data.submissions) {
+                    if (sub.stdout) sub.stdout = Buffer.from(sub.stdout, 'base64').toString('utf-8');
+                    if (sub.stderr) sub.stderr = Buffer.from(sub.stderr, 'base64').toString('utf-8');
+                    if (sub.compile_output) sub.compile_output = Buffer.from(sub.compile_output, 'base64').toString('utf-8');
+                    if (sub.message) sub.message = Buffer.from(sub.message, 'base64').toString('utf-8');
+                }
+            }
             return response.data;
         } catch (error) {
             console.error('Judge0 Fetch Error:', error.response?.data || error.message);

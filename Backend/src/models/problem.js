@@ -64,6 +64,18 @@ const problemSchema= new Schema({
             }
         }
     ],
+    driverCode: [
+        {
+            language: {
+                type: String,
+                required: true
+            },
+            code: {
+                type: String,
+                required: true
+            }
+        }
+    ],
     //store actual solution of given question, so that if a paid user come to give him sol
     referenceSolution:[
         {

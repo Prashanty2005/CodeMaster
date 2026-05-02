@@ -34,6 +34,7 @@ const createProblem = async (req, res) => {
             visibleTestCases, 
             hiddenTestCases, 
             startCode,
+            driverCode,
             referenceSolution 
         } = req.body;
 
@@ -271,6 +272,11 @@ const createProblem = async (req, res) => {
                 initialCode: code.initialCode
             })) : [],
             
+            driverCode: Array.isArray(driverCode) ? driverCode.map(code => ({
+                language: code.language,
+                code: code.code
+            })) : [],
+            
             referenceSolution: referenceSolution.map(solution => ({
                 language: solution.language,
                 completeCode: solution.completeCode
@@ -360,6 +366,7 @@ const updateProblem = async (req, res) => {
         visibleTestCases, 
         hiddenTestCases, 
         startCode,
+        driverCode,
         referenceSolution 
     } = req.body;
     
@@ -539,6 +546,7 @@ const updateProblem = async (req, res) => {
             visibleTestCases: visibleTestCases || [],
             hiddenTestCases: hiddenTestCases || [],
             startCode: startCode || [],
+            driverCode: driverCode || [],
             referenceSolution: referenceSolution || [],
             updatedAt: Date.now()
         };
@@ -627,7 +635,7 @@ const getProblemById = async(req,res) => {
         if(!id){
             throw new Error("id is missing of problem");
         }
-        const getProblem = await Problem.findById(id).select('_id title description difficulty tags visibleTestCases hiddenTestCases startCode referenceSolution');
+        const getProblem = await Problem.findById(id).select('_id title description difficulty tags visibleTestCases hiddenTestCases startCode driverCode referenceSolution');
 
         if(!getProblem){
            return res.status(400).send("problem does not exist");

@@ -40,11 +40,18 @@ const submitCode = async(req,res)=>{
                     supportedLanguages: ['cpp', 'java', 'javascript', 'python']
                 });
         }
+        // Find driver code for the language
+        const driverCodeObj = problem.driverCode?.find(d => d.language.toLowerCase() === language.toLowerCase());
+        let finalCode = code;
+        if (driverCodeObj && driverCodeObj.code) {
+            finalCode = driverCodeObj.code.replace('{{USER_CODE}}', code);
+        }
+
         //prepare for judge0
         const submissions = [];
             for (const [testIndex, testCase] of problem.hiddenTestCases.entries()) {
                 submissions.push({
-                    source_code: code,
+                    source_code: finalCode,
                     language_id: language_id,
                     stdin: testCase.input,
                     expected_output: testCase.output.trim()
@@ -168,11 +175,18 @@ const runCode = async(req,res) => {
                     supportedLanguages: ['cpp', 'java', 'javaScript', 'python']
                 });
         }
+        // Find driver code for the language
+        const driverCodeObj = problem.driverCode?.find(d => d.language.toLowerCase() === language.toLowerCase());
+        let finalCode = code;
+        if (driverCodeObj && driverCodeObj.code) {
+            finalCode = driverCodeObj.code.replace('{{USER_CODE}}', code);
+        }
+
         //prepare for judge0
         const submissions = [];
             for (const [testIndex, testCase] of problem.visibleTestCases.entries()) {
                 submissions.push({
-                    source_code: code,
+                    source_code: finalCode,
                     language_id: language_id,
                     stdin: testCase.input,
                     expected_output: testCase.output.trim()

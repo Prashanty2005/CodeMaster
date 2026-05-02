@@ -41,7 +41,13 @@ const problemSchema = z.object({
       language: z.enum(['C++', 'Java', 'JavaScript']),
       completeCode: z.string().min(1, 'Complete code is required')
     })
-  ).length(3, 'All three languages required')
+  ).length(3, 'All three languages required'),
+  driverCode: z.array(
+    z.object({
+      language: z.enum(['C++', 'Java', 'JavaScript']),
+      code: z.string().optional()
+    })
+  ).length(3)
 });
 
 function AdminPanel() {
@@ -66,6 +72,11 @@ function AdminPanel() {
         { language: 'C++', completeCode: '' },
         { language: 'Java', completeCode: '' },
         { language: 'JavaScript', completeCode: '' }
+      ],
+      driverCode: [
+        { language: 'C++', code: '' },
+        { language: 'Java', code: '' },
+        { language: 'JavaScript', code: '' }
       ]
     }
   });
@@ -355,6 +366,17 @@ function AdminPanel() {
                           {...register(`referenceSolution.${index}.completeCode`)}
                           className={`${textareaStyle} font-mono text-xs h-32 bg-gray-900 focus:bg-gray-800`}
                           placeholder={`// Enter complete ${lang} solution`}
+                        />
+                      </div>
+                      
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text text-gray-400 text-xs uppercase font-bold">Driver Code (Hidden Wrapper)</span>
+                        </label>
+                        <textarea
+                          {...register(`driverCode.${index}.code`)}
+                          className={`${textareaStyle} font-mono text-xs h-32 bg-gray-900 focus:bg-gray-800`}
+                          placeholder={`// Enter ${lang} driver code with {{USER_CODE}} (Optional)`}
                         />
                       </div>
                     </div>
