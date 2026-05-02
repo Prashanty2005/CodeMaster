@@ -303,7 +303,7 @@ function AdminUpload() {
                       className="w-full h-auto max-h-[400px]"
                       controls
                       src={existingVideo.secureUrl}
-                      poster={`https://res.cloudinary.com/${existingVideo.cloudName || 'demo'}/video/upload/w_300,h_200,c_fill/${existingVideo.cloudinaryPublicId}.jpg`}
+                      poster={existingVideo.thumbnailUrl || `https://res.cloudinary.com/dxakwxozp/video/upload/w_300,h_200,c_fill/${existingVideo.cloudinaryPublicId}.jpg`}
                     >
                       Your browser does not support the video tag.
                     </video>

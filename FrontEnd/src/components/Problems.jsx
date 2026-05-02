@@ -6,6 +6,7 @@ import {
   Code2, Search, Play, Lock, CheckCircle, 
   CircleDashed, BarChart2, Menu, X, ChevronRight 
 } from "lucide-react";
+import ProblemSkeleton from "./ProblemSkeleton";
 
 function Problems() {
   const dispatch = useDispatch();
@@ -199,9 +200,10 @@ function Problems() {
 
           {/* Loading State */}
           {loading && (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <span className="loading loading-spinner loading-lg text-indigo-500"></span>
-              <p className="text-slate-400">Loading problems...</p>
+            <div className="flex flex-col w-full">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <ProblemSkeleton key={index} />
+              ))}
             </div>
           )}
 

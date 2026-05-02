@@ -398,7 +398,7 @@ const ProblemPage = () => {
                 <div className="prose prose-invert max-w-none p-4">
                   <h2 className="text-2xl font-bold mb-4 text-white">Editorial</h2>
                   <div className="whitespace-pre-wrap text-gray-300 leading-relaxed bg-gray-900/60 p-6 rounded-xl border border-gray-700">
-                    <Editorial secureUrl={problem.secureUrl} thumbnailUrl={problem.thumbnailUrl} duration={problem.duration} ></Editorial>
+                    <Editorial problemId={problemId} secureUrl={problem.secureUrl} thumbnailUrl={problem.thumbnailUrl} duration={problem.duration} />
                   </div>
                 </div>
               )}
