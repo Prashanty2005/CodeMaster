@@ -12,10 +12,46 @@ const Editorial = ({ problemId, secureUrl, thumbnailUrl, duration }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // We rely entirely on props (secureUrl, thumbnailUrl, duration)
-    // because the backend does not have an /editorial endpoint yet.
-    setLoading(false);
-  }, [secureUrl, problemId]);
+    let isMounted = true;
+
+    const fetchEditorial = async () => {
+      if (!problemId && !secureUrl) {
+        setLoading(false);
+        return;
+      }
+
+      if (!problemId && secureUrl) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await axiosClient.get(`/getVideo/${problemId}`);
+        if (isMounted) {
+          setEditorialData(response.data);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err.response?.data?.message || err.message || 'Failed to load editorial content');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    if (problemId) {
+      fetchEditorial();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [problemId, secureUrl]);
 
   const formatTime = useCallback((seconds) => {
     if (!seconds || isNaN(seconds)) return '0:00';
@@ -38,18 +74,18 @@ const Editorial = ({ problemId, secureUrl, thumbnailUrl, duration }) => {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    
+
     const handleTimeUpdate = () => {
       setCurrentTime(video.currentTime);
     };
-    
+
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
-    
+
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('play', onPlay);
     video.addEventListener('pause', onPause);
-    
+
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('play', onPlay);
@@ -88,7 +124,7 @@ const Editorial = ({ problemId, secureUrl, thumbnailUrl, duration }) => {
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8">
       {finalSecureUrl && (
-        <div 
+        <div
           className="relative w-full rounded-xl overflow-hidden shadow-2xl border border-[#2a2e3a] bg-[#0f1117] group"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
@@ -100,11 +136,10 @@ const Editorial = ({ problemId, secureUrl, thumbnailUrl, duration }) => {
             onClick={togglePlayPause}
             className="w-full aspect-video object-contain bg-black cursor-pointer"
           />
-          
-          <div 
-            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 transition-all duration-300 ease-in-out ${
-              isHovering || !isPlaying ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
-            }`}
+
+          <div
+            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 transition-all duration-300 ease-in-out ${isHovering || !isPlaying ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+              }`}
           >
             <div className="flex items-center gap-4">
               <button
@@ -113,12 +148,12 @@ const Editorial = ({ problemId, secureUrl, thumbnailUrl, duration }) => {
               >
                 {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-1" />}
               </button>
-              
+
               <div className="flex items-center flex-1 gap-3">
                 <span className="text-white text-xs font-medium font-mono min-w-[40px] text-center">
                   {formatTime(currentTime)}
                 </span>
-                
+
                 <input
                   type="range"
                   min="0"
@@ -132,7 +167,7 @@ const Editorial = ({ problemId, secureUrl, thumbnailUrl, duration }) => {
                   }}
                   className="flex-1 h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400"
                 />
-                
+
                 <span className="text-white text-xs font-medium font-mono min-w-[40px] text-center">
                   {formatTime(finalDuration)}
                 </span>
@@ -144,7 +179,7 @@ const Editorial = ({ problemId, secureUrl, thumbnailUrl, duration }) => {
 
       {hasContent && (
         <div className="bg-[#0f1117] p-6 md:p-8 rounded-xl border border-[#2a2e3a] shadow-lg">
-          <div 
+          <div
             className="prose prose-invert prose-blue max-w-none prose-pre:bg-[#1a1e2a] prose-pre:border prose-pre:border-[#2a2e3a] prose-code:text-blue-300 prose-headings:text-gray-100 prose-p:text-gray-300 prose-a:text-blue-400 hover:prose-a:text-blue-300"
             dangerouslySetInnerHTML={{ __html: editorialData.content || editorialData.markdown || editorialData.explanation }}
           />
