@@ -3,7 +3,6 @@ const app = express();
 require('dotenv').config();
 const main = require('./config/db');
 const cookieParser = require("cookie-parser");
-const redisMain = require("./config/redis");
 const cors = require("cors");
 
 const authRouter = require("./routes/userAuth");
@@ -32,16 +31,6 @@ app.use(async (req, res, next) => {
         // Connect to MongoDB before proceeding
         await main(); 
         
-        try {
-            // Safely attempt Redis connection (if not already open)
-            if (!redisMain.isOpen) {
-                await redisMain.connect();
-            }
-        } catch (redisErr) {
-            // Catch Redis errors silently so it doesn't crash the whole app
-            console.error("Redis Init Error:", redisErr);
-        }
-        
         // Crucial: Moves on to your routes only AFTER DB is connected
         next(); 
     } catch (err) {
@@ -54,7 +43,7 @@ app.use(async (req, res, next) => {
 app.get("/", (req, res) => {
     res.status(200).json({ 
         success: true, 
-        message: "CodeMaster API is running perfectly on Vercel!" 
+        message: "CodeMaster API is running perfectly on Vercel with Upstash!" 
     });
 });
 
