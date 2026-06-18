@@ -1,12 +1,9 @@
-const  { createClient } = require("redis");
+const { Redis } = require('@upstash/redis');
+require('dotenv').config();
 
-const redisClient = createClient({
-    username: 'default',
-    password: process.env.REDIS_PASS,
-    socket: {
-        host: 'redis-13725.crce179.ap-south-1-1.ec2.cloud.redislabs.com',
-        port: 13725
-    }
+const redisClient = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-module.exports= redisClient
+module.exports = redisClient;
