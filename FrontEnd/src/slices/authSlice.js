@@ -1,13 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axiosClient from '../utils/axiosClient';
 
-// Helper function to extract error message safely
 const getErrorMessage = (error) => {
-  // Check if backend sent a specific error message
   if (error.response && error.response.data && error.response.data.message) {
     return error.response.data.message;
   }
-  // Fallback to generic JS error message or default
   return error.message || "An unknown error occurred";
 };
 
@@ -18,7 +15,6 @@ export const registerUser = createAsyncThunk(
       const response = await axiosClient.post('/user/register', userData);
       return response.data.user;
     } catch (error) {
-      // FIX: Pass only the string message, not the whole object
       return rejectWithValue(getErrorMessage(error));
     }
   }
@@ -70,30 +66,26 @@ const authSlice = createSlice({
   },
   reducers: {
     updateUser: (state, action) => {
-    state.user = { ...state.user, ...action.payload };
-  }
+      state.user = { ...state.user, ...action.payload };
+    }
   },
   extraReducers: (builder) => {
     builder
-      // Register User Cases
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.isAuthenticated = true; // Simplified: if fulfilled, it's true
+        state.isAuthenticated = true;
         state.user = action.payload;
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
-        // FIX: payload is now a string, so we use it directly
         state.error = action.payload; 
         state.isAuthenticated = false;
         state.user = null;
       })
-
-      // Login User Cases
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -105,13 +97,10 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        // FIX: payload is now a string
         state.error = action.payload; 
         state.isAuthenticated = false;
         state.user = null;
       })
-
-      // Check Auth Cases
       .addCase(checkAuth.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -123,13 +112,10 @@ const authSlice = createSlice({
       })
       .addCase(checkAuth.rejected, (state, action) => {
         state.loading = false;
-        // FIX: payload is now a string
         state.error = action.payload; 
         state.isAuthenticated = false;
         state.user = null;
       })
-
-      // Logout User Cases
       .addCase(logoutUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -142,7 +128,6 @@ const authSlice = createSlice({
       })
       .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;
-        // FIX: payload is now a string
         state.error = action.payload; 
         state.isAuthenticated = false;
         state.user = null;
@@ -150,9 +135,5 @@ const authSlice = createSlice({
   }
 });
 
-export const fetchProblem = createAsyncThunk(
-  
-)
 export const { updateUser } = authSlice.actions;
 export default authSlice.reducer;
-

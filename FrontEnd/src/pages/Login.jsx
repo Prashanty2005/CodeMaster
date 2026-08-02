@@ -129,7 +129,7 @@ function Login() {
                     </div>
                     <input
                       {...register("email")}
-                      placeholder="dev@codemaster.com"
+                      placeholder="prashantyanpallewar@gmail.com"
                       className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-600 focus:bg-black/50 focus:border-indigo-500 focus:ring-0 outline-none transition-all duration-300"
                     />
                   </div>
