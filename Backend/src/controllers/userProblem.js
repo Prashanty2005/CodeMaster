@@ -732,8 +732,14 @@ const solvedProblemByUser =async(req,res) => {
 
         res.status(200).send(user.problemSolved);
     }
-    catch(err){
-        res.status(500).send(err);
+    catch (err) {
+    console.log(err);               // <-- VERY IMPORTANT
+    console.log(err.stack);
+
+    res.status(500).json({
+        message: err.message,
+        stack: err.stack,
+    });
     }
 }
 
