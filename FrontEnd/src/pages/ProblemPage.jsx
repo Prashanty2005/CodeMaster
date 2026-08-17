@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import ChatAi from '../components/ChatAI';
 import Editorial from '../components/Editorials';
+import HintPanel from '../components/HintPanel';
 
 // 1. Language Mapping Configuration
 const langMap = {
@@ -630,6 +631,14 @@ const ProblemPage = () => {
                                                   {tc.status_id === 3 ? 'Accepted' : `Failed (${tc.status?.description || tc.status})`}
                                               </span>
                                           </div>
+                                          {tc.status_id !== 3 && (
+                                              <HintPanel 
+                                                  problemTitle={problem.title} 
+                                                  userCode={code} 
+                                                  failedInput={tc.stdin || 'Unknown'} 
+                                                  expectedOutput={tc.expected_output || tc.expected || 'Unknown'} 
+                                              />
+                                          )}
                                       </div>
                                     );
                                 })}
